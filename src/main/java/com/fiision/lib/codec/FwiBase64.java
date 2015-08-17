@@ -1,7 +1,7 @@
 package com.fiision.lib.codec;
 
 
-import com.fiision.lib.foundation.*;
+import com.fiision.lib.foundation.FwiData;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -10,19 +10,13 @@ public final class FwiBase64 {
     
     /** Validate base64. */
     static public boolean isBase64(FwiData base64Data) {
-        /* Condition validation */
-        if (base64Data == null || base64Data.length() == 0) return false;
-        else return FwiBase64.isBase64(base64Data.bytes());
+        return !(base64Data == null || base64Data.length() == 0) && FwiBase64.isBase64(base64Data.bytes());
     }
 	static public boolean isBase64(String  base64Data) {
-        /* Condition validation */
-		if (base64Data == null || base64Data.length() == 0) return false;
-        return FwiBase64.isBase64(FwiCodec.convertStringToData(base64Data));
+        return !(base64Data == null || base64Data.length() == 0) && FwiBase64.isBase64(FwiCodec.convertStringToData(base64Data));
 	}
     static public boolean isBase64(byte[]  base64Data) {
-        /* Condition validation */
-        if (base64Data == null || base64Data.length == 0 || (base64Data.length % 4) != 0) return false;
-        return Base64.isArrayByteBase64(base64Data);
+        return !(base64Data == null || base64Data.length == 0 || (base64Data.length % 4) != 0) && Base64.isArrayByteBase64(base64Data);
     }
     
     /** Decode base64. */

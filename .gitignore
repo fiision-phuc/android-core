@@ -1,3 +1,7 @@
+# Ignore MAC generated files
+.DS_Store
+/*/.DS_Store
+
 # Built application files
 *.apk
 *.ap_
@@ -25,3 +29,8 @@ proguard/
 
 # Log Files
 *.log
+
+#IntelliJ IDEA
+.idea
+*.iml
+/*/*.iml
