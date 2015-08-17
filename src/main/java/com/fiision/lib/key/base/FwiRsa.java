@@ -1,5 +1,5 @@
 //  Project name: FwiCore
-//  File name   : FwiRESTService.java
+//  File name   : FwiRsa.java
 //
 //  Author      : Phuc, Tran Huu
 //  Created date: 8/17/15
@@ -36,60 +36,64 @@
 //  person or entity with respect to any loss or damage caused, or alleged  to  be
 //  caused, directly or indirectly, by the use of this software.
 
-package com.fiision.lib.services;
+package com.fiision.lib.key.base;
 
 
-import com.fiision.lib.codec.*;
+import com.fiision.lib.foundation.*;
 
 import java.io.*;
 
+import javax.crypto.*;
 
-public class FwiRESTService extends FwiService {
+
+public abstract class FwiRsa extends FwiKey implements SecretKey, Serializable {
 
 
-    // Class's constructors
-    public FwiRESTService(com.fiision.lib.request.FwiRequest request) {
-        super(request);
+    // Global variables
+    protected int mBlocksize = 0;
 
-        _req.addHeader("Accept", "application/json");
-        _req.addHeader("Accept-Charset", "UTF-8");
+
+	// Class's constructors
+	public FwiRsa(String keyName, int keysize) {
+		super(keyName, keysize);
+        this.mBlocksize = (keysize >> 3);
+	}
+
+
+	// <editor-fold defaultstate="collapsed" desc="Class's properties">
+	public String getFormat() {
+		return "RAW";
+	}
+    public byte[] getEncoded() {
+        FwiData data = this.encode();
+
+        if (data == null) return null;
+        else return data.bytes();
     }
+	public String getAlgorithm() {
+        return "RSA";
+	}
+
+	public int blocksize() {
+		return this.mBlocksize;
+	}
+	public String objectIdentifier() {
+		return "1.2.840.113549.1.1.1";
+	}
+	// </editor-fold>
 
 
-    // Class's public methods
-    @Override
-    public FwiJson getResource() {
-        super.execute();
-
-        FwiJson responseMessage = null;
-        if (_res != null) {
-            HttpEntity entity = _res.getEntity();
-
-            // Download message
-            try {
-                InputStream content = entity.getContent();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-
-                // Download response
-                int capacity = (int) (entity.getContentLength() > 0 ? entity.getContentLength() : 4096);
-                StringBuilder builder = new StringBuilder(capacity);
-
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line);
-                }
-
-                // Close connection
-                content.close();
-                reader.close();
-
-                // Convert to json object
-                responseMessage = FwiCodec.convertDataToJson(builder.toString());
-            } catch (Exception ex) {
-                _req.abort();
-                responseMessage = null;
-            }
+	// Class's protected methods
+	protected Cipher _getCipher() {
+        Cipher cipher = null;
+		try {
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+		}
+		catch (Exception ex) {
+            cipher = null;
+		}
+        finally {
+            return cipher;
         }
-        return responseMessage;
-    }
+	}
 }

@@ -1,5 +1,5 @@
 //  Project name: FwiCore
-//  File name   : FwiRESTService.java
+//  File name   : FwiDataParam.java
 //
 //  Author      : Phuc, Tran Huu
 //  Created date: 8/17/15
@@ -36,60 +36,64 @@
 //  person or entity with respect to any loss or damage caused, or alleged  to  be
 //  caused, directly or indirectly, by the use of this software.
 
-package com.fiision.lib.services;
+package com.fiision.lib.request.params;
 
 
 import com.fiision.lib.codec.*;
+import com.fiision.lib.foundation.*;
 
 import java.io.*;
 
 
-public class FwiRESTService extends FwiService {
+public class FwiDataParam implements Serializable {
 
-
-    // Class's constructors
-    public FwiRESTService(com.fiision.lib.request.FwiRequest request) {
-        super(request);
-
-        _req.addHeader("Accept", "application/json");
-        _req.addHeader("Accept-Charset", "UTF-8");
-    }
-
-
-    // Class's public methods
-    @Override
-    public FwiJson getResource() {
-        super.execute();
-
-        FwiJson responseMessage = null;
-        if (_res != null) {
-            HttpEntity entity = _res.getEntity();
-
-            // Download message
-            try {
-                InputStream content = entity.getContent();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-
-                // Download response
-                int capacity = (int) (entity.getContentLength() > 0 ? entity.getContentLength() : 4096);
-                StringBuilder builder = new StringBuilder(capacity);
-
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line);
-                }
-
-                // Close connection
-                content.close();
-                reader.close();
-
-                // Convert to json object
-                responseMessage = FwiCodec.convertDataToJson(builder.toString());
-            } catch (Exception ex) {
-                _req.abort();
-                responseMessage = null;
-            }
+    
+    // <editor-fold defaultstate="collapsed" desc="Class's static constructors">
+    static public FwiDataParam paramWithJson(FwiJson json) {
+        /* Condition validation */
+        if (json == null) {
+            return null;
         }
-        return responseMessage;
+        else {
+            return FwiDataParam.paramWithData(json.encode(), "application/json; charset=UTF-8");
+        }
+    }
+    static public FwiDataParam paramWithString(String string) {
+        /* Condition validation */
+        if (string == null || string.length() == 0) {
+            return null;
+        }
+        else {
+            return FwiDataParam.paramWithData(FwiCodec.convertStringToData(string), "application/json; charset=UTF-8");
+        }
+    }
+    static public FwiDataParam paramWithData(FwiData data, String contentType) {
+        /* Condition validation */
+        if (data == null || data.length() == 0 || contentType == null || contentType.length() == 0) {
+            return null;
+        }
+        return new FwiDataParam(data, contentType);
+    }
+    // </editor-fold>
+    
+    
+    // Global variables
+    private String _contentType = null;
+    private FwiData _data = null;
+    
+    
+    // Class's constructors
+    public FwiDataParam(FwiData data, String contentType) {
+        this._contentType = contentType;
+        this._data = data;
+    }
+    
+    
+    // Class's properties
+    public FwiData getData() {
+        return _data;
+    }
+    public String getContentType() {
+        return _contentType;
     }
 }

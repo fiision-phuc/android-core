@@ -1,5 +1,5 @@
 //  Project name: FwiCore
-//  File name   : FwiRESTService.java
+//  File name   : FwiFormParam.java
 //
 //  Author      : Phuc, Tran Huu
 //  Created date: 8/17/15
@@ -36,60 +36,71 @@
 //  person or entity with respect to any loss or damage caused, or alleged  to  be
 //  caused, directly or indirectly, by the use of this software.
 
-package com.fiision.lib.services;
+package com.fiision.lib.request.params;
 
-
-import com.fiision.lib.codec.*;
 
 import java.io.*;
+import java.net.*;
 
 
-public class FwiRESTService extends FwiService {
-
-
-    // Class's constructors
-    public FwiRESTService(com.fiision.lib.request.FwiRequest request) {
-        super(request);
-
-        _req.addHeader("Accept", "application/json");
-        _req.addHeader("Accept-Charset", "UTF-8");
+public class FwiFormParam implements Serializable {
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Class's static constructors">
+    static public FwiFormParam param(String key, String value) {
+        return new FwiFormParam(key, value);
     }
-
-
-    // Class's public methods
+    // </editor-fold>
+    
+    
+    // Global variables
+    private String _key   = null;
+    private String _value = null;
+    
+    
+    // Class's constructors
+    public FwiFormParam(String key, String value) {
+        this._key   = key;
+        this._value = value;
+    }
+    
+    
+    // Class's properties
+    public String getKey() {
+        return _key;
+    }
+    public String getValue() {
+        return _value;
+    }
+    
+    
+    // Class's override methods
     @Override
-    public FwiJson getResource() {
-        super.execute();
-
-        FwiJson responseMessage = null;
-        if (_res != null) {
-            HttpEntity entity = _res.getEntity();
-
-            // Download message
-            try {
-                InputStream content = entity.getContent();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-
-                // Download response
-                int capacity = (int) (entity.getContentLength() > 0 ? entity.getContentLength() : 4096);
-                StringBuilder builder = new StringBuilder(capacity);
-
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line);
-                }
-
-                // Close connection
-                content.close();
-                reader.close();
-
-                // Convert to json object
-                responseMessage = FwiCodec.convertDataToJson(builder.toString());
-            } catch (Exception ex) {
-                _req.abort();
-                responseMessage = null;
-            }
+    public boolean equals(Object o) {
+        /* Condition validation */
+        if (o == null || !(o instanceof FwiFormParam)) {
+            return false;
         }
-        return responseMessage;
+        else {
+            return this.hashCode() == o.hashCode();
+        }
+    }
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + (this._key != null ? this._key.hashCode() : 0);
+        hash = 97 * hash + (this._value != null ? this._value.hashCode() : 0);
+        
+        return hash;
+    }
+    
+    @Override
+    public String toString() {
+        try {
+            return String.format("%s=%s", _key, URLEncoder.encode(_value, "UTF-8"));
+        }
+        catch(Exception ex) {
+            return String.format("%s=", _key);
+        }
     }
 }

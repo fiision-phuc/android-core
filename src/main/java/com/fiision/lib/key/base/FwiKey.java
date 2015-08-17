@@ -1,5 +1,5 @@
 //  Project name: FwiCore
-//  File name   : FwiRESTService.java
+//  File name   : FwiKey.java
 //
 //  Author      : Phuc, Tran Huu
 //  Created date: 8/17/15
@@ -36,60 +36,77 @@
 //  person or entity with respect to any loss or damage caused, or alleged  to  be
 //  caused, directly or indirectly, by the use of this software.
 
-package com.fiision.lib.services;
+package com.fiision.lib.key.base;
 
 
 import com.fiision.lib.codec.*;
+import com.fiision.lib.foundation.*;
 
 import java.io.*;
+import java.security.*;
 
 
-public class FwiRESTService extends FwiService {
+public abstract class FwiKey implements Serializable {
+	static private final long serialVersionUID = 1L;
 
 
-    // Class's constructors
-    public FwiRESTService(com.fiision.lib.request.FwiRequest request) {
-        super(request);
-
-        _req.addHeader("Accept", "application/json");
-        _req.addHeader("Accept-Charset", "UTF-8");
-    }
+	// Global variables
+	protected int mKeySize = 0;
+	protected String mKeyName = null;
 
 
-    // Class's public methods
-    @Override
-    public FwiJson getResource() {
-        super.execute();
+	// Class's constructors
+	public FwiKey(String keyName) {
+		this.mKeySize = 0;
+		this.mKeyName = keyName;
+	}
+	public FwiKey(String keyName, int keySize) {
+		this.mKeyName = keyName;
+		this.mKeySize = keySize;
+	}
 
-        FwiJson responseMessage = null;
-        if (_res != null) {
-            HttpEntity entity = _res.getEntity();
 
-            // Download message
-            try {
-                InputStream content = entity.getContent();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+	// <editor-fold defaultstate="collapsed" desc="Class's properties">
+	/** Key's size. */
+	public int keysize() {
+		return this.mKeySize;
+	}
+	/** Name of the key, will be used when stored inside keychain. */
+	public String keyName() {
+		return this.mKeyName;
+	}
+    // </editor-fold>
 
-                // Download response
-                int capacity = (int) (entity.getContentLength() > 0 ? entity.getContentLength() : 4096);
-                StringBuilder builder = new StringBuilder(capacity);
 
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line);
-                }
+	// Class's public abstract methods
+	public abstract FwiData encode();
 
-                // Close connection
-                content.close();
-                reader.close();
 
-                // Convert to json object
-                responseMessage = FwiCodec.convertDataToJson(builder.toString());
-            } catch (Exception ex) {
-                _req.abort();
-                responseMessage = null;
-            }
+	// Class's public methods
+	public FwiData encodeBase64Data() {
+		return FwiBase64.encodeBase64Data(this.encode());
+	}
+	public String  encodeBase64String() {
+		return FwiCodec.convertDataToString(this.encodeBase64Data());
+	}
+
+
+	// Class's protected methods
+	protected void _keysize(int keysize) {
+		/* Condition validation */
+		if (keysize < 0) return;
+		this.mKeySize = keysize;
+	}
+    protected SecureRandom _getSecureRandom() {
+        SecureRandom secureRandom = null;
+        try {
+            secureRandom = SecureRandom.getInstance("SHA1PRNG");
         }
-        return responseMessage;
+        catch (Exception ex) {
+            secureRandom = null;
+        }
+        finally {
+            return secureRandom;
+        }
     }
 }

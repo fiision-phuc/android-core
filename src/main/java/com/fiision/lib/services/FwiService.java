@@ -1,18 +1,7 @@
 package com.fiision.lib.services;
 
 
-import com.fiision.lib.services.request.*;
-import org.apache.http.*;
-import org.apache.http.client.*;
-import org.apache.http.conn.scheme.*;
-import org.apache.http.conn.ssl.*;
-import org.apache.http.impl.client.*;
-import org.apache.http.impl.conn.tsccm.*;
-import org.apache.http.params.*;
-import org.apache.http.protocol.*;
-
-import java.security.KeyStore;
-import java.security.KeyStoreException;
+import java.security.*;
 
 
 public abstract class FwiService {
@@ -24,13 +13,13 @@ public abstract class FwiService {
 	
 	
 	// Global variables
-	protected FwiRequest   _req = null;
+	protected com.fiision.lib.request.FwiRequest _req = null;
 	protected HttpClient   _con = null;
     protected HttpResponse _res = null;
 	
     
 	// Class's constructors
-	public FwiService(FwiRequest request) {
+	public FwiService(com.fiision.lib.request.FwiRequest request) {
 		if (!_isInitialized) {
 
             try {
