@@ -39,6 +39,8 @@
 package com.fiision.lib.services;
 
 
+import org.apache.http.*;
+
 import java.io.*;
 
 

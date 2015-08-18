@@ -38,6 +38,7 @@
 
 package com.fiision.lib.services;
 
+
 import org.apache.http.conn.ssl.SSLSocketFactory;
 
 import java.io.*;
@@ -46,6 +47,7 @@ import java.security.*;
 import java.security.cert.*;
 
 import javax.net.ssl.*;
+
 
 public class MySSLSocketFactory extends SSLSocketFactory {
     SSLContext sslContext = SSLContext.getInstance("TLS");

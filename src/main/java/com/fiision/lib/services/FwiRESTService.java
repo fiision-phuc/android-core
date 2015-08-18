@@ -40,6 +40,9 @@ package com.fiision.lib.services;
 
 
 import com.fiision.lib.codec.*;
+import com.fiision.lib.foundation.*;
+
+import org.apache.http.*;
 
 import java.io.*;
 

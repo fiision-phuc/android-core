@@ -46,7 +46,6 @@ import java.security.*;
 
 
 public final class FwiKeystore {
-//	static private final char[] kAuth_Keystore = "1OQj0,Bp^mg>~ovBIe4r6pO9Q]p+)>yS9(X|bL>Zs!STn I-La#-9RZJPd.DZ+_T".toCharArray();
 	static private File mKeystoreDir = null;
     static private File mKeystoreFile = null;
     static private KeyStore mKeystore = null;
@@ -59,7 +58,7 @@ public final class FwiKeystore {
 		mKeystoreDir = context.getDir("Keystore", Context.MODE_PRIVATE);
 
 		// Load keystore
-		mKeystoreFile = new File(String.format("%s%sKeystore", mKeystoreDir.getAbsolutePath(), File.separator));
+		mKeystoreFile = new File(String.format("%s%sKeystore.jks", mKeystoreDir.getAbsolutePath(), File.separator));
 		try {
 			mKeystore = KeyStore.getInstance("UBER");
 			

@@ -46,6 +46,10 @@ import com.fiision.lib.codec.*;
 import com.fiision.lib.foundation.*;
 import com.fiision.lib.request.params.*;
 
+import org.apache.http.*;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.*;
+
 import java.net.*;
 import java.util.*;
 
