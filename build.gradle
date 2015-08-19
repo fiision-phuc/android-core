@@ -1,13 +1,30 @@
-apply plugin: 'java'
+apply plugin: 'android-library'
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 22
+    }
+    dexOptions {
+        incremental true
+        preDexLibraries false
+    }
+}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
     // Codec
     compile 'commons-codec:commons-codec:1.4'
     compile 'com.google.android:android:4.1.1.4'
+
     // Json Parser
     compile 'com.fasterxml.jackson.core:jackson-core:2.6.+'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.+'
