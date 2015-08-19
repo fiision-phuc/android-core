@@ -42,7 +42,7 @@ package com.fiision.lib;
 public final class FwiCore {
 
     /** AES Key size supported. */
-    static public enum FwiAesSize {
+    public enum FwiAesSize {
         k128(128),
         k192(192),
         k256(256);
@@ -58,11 +58,11 @@ public final class FwiCore {
 
 
         public int length;
-        private FwiAesSize(int length) { this.length = length; }
+        FwiAesSize(int length) { this.length = length; }
     }
 
     /** RSA Key size supported. */
-    static public enum FwiRsaSize {
+    public enum FwiRsaSize {
         k1024(1024),
         k2048(2048),
         k4096(4096);
@@ -78,13 +78,13 @@ public final class FwiCore {
 
         public int block;
         public int length;
-        private FwiRsaSize(int length) { this.block = (length >> 3); this.length = length; }
+        FwiRsaSize(int length) { this.block = (length >> 3); this.length = length; }
 
         @Override
         public String toString() { return String.format("RSA -> Key-size: %i bits, Block-size: %i bytes, Content-size: %i", length, block, (block - 12)); }
     }
     /** Signature supported. */
-    static public enum FwiSignature {
+    public enum FwiSignature {
         kSignature1  ((byte)20, "1.2.840.113549.1.1.5" , "SHA1withRSA"  ),
         kSignature256((byte)32, "1.2.840.113549.1.1.11", "SHA256withRSA"),
         kSignature384((byte)48, "1.2.840.113549.1.1.12", "SHA384withRSA"),
@@ -120,14 +120,14 @@ public final class FwiCore {
         public byte length		= 0x00;
         public String oid		= null;
         public String algorithm = null;
-        private FwiSignature(byte length, String oid, String algorithm) { this.length = length; this.oid = oid; this.algorithm = algorithm; }
+        FwiSignature(byte length, String oid, String algorithm) { this.length = length; this.oid = oid; this.algorithm = algorithm; }
 
         @Override
         public String toString() { return String.format("%s (%s)", algorithm, oid); }
     }
 
     /** Json supported. */
-    static public enum FwiJsonValue {
+    public enum FwiJsonValue {
         kNull	 ((byte)0x00, "Null"   ), // Primitive
         kBoolean ((byte)0x01, "Boolean"), // Primitive
         kDouble	 ((byte)0x02, "Double" ), // Primitive
@@ -138,14 +138,14 @@ public final class FwiCore {
 
         public byte value = 0x00;
         public String description = null;
-        private FwiJsonValue(byte value, String description) { this.value = value; this.description = description; }
+        FwiJsonValue(byte value, String description) { this.value = value; this.description = description; }
 
         @Override
         public String toString() { return description; }
     }
 
     /** HTTP request method supported. */
-    static public enum FwiHttpMethod {
+    public enum FwiHttpMethod {
         kCopy   ("COPY"),
         kDelete ("DELETE"),     // Delete data
         kGet    ("GET" ),       // Load data
@@ -160,7 +160,7 @@ public final class FwiCore {
 
 
         public String method = null;
-        private FwiHttpMethod(String method) { this.method = method; }
+        FwiHttpMethod(String method) { this.method = method; }
 
         @Override
         public String toString() { return String.format("HTTP %s", this.method); }

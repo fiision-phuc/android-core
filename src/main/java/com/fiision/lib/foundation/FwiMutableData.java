@@ -111,11 +111,8 @@ public final class FwiMutableData extends FwiData {
             return false;
         }
         final FwiMutableData other = (FwiMutableData) obj;
-        if (this._list != other._list && (this._list == null || !this._list.equals(other._list))) {
-            return false;
-        }
-        return true;
-    }
+		return !(this._list != other._list && (this._list == null || !this._list.equals(other._list)));
+	}
     
     @Override
     public int hashCode() {
