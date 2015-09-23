@@ -1,8 +1,8 @@
 apply plugin: 'android-library'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -10,7 +10,7 @@ android {
     }
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 23
     }
     dexOptions {
         incremental true
@@ -19,12 +19,13 @@ android {
 }
 
 dependencies {
-//    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     // Codec
     compile 'commons-codec:commons-codec:1.4'
-    compile 'com.google.android:android:4.1.1.4'
+    compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+
     // Json Parser
-    compile 'com.fasterxml.jackson.core:jackson-core:2.6.+'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.6.+'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.+'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.6.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.6.1'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.1'
 }
