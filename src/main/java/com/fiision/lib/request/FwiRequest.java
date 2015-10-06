@@ -107,7 +107,7 @@ public class FwiRequest {
 
     /** Build the request. */
     public long prepare() {
-        mHeaders.put("Accept-Encoding", "gzip, deflate");
+//        mHeaders.put("Accept-Encoding", "gzip, deflate");
         mHeaders.put("Connection", "close");
 
         /* Condition validation */
