@@ -16,16 +16,22 @@ android {
         incremental true
         preDexLibraries false
     }
+
+    testOptions {
+        unitTests.all {
+            jvmArgs '-XX:MaxPermSize=256m'
+        }
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     // Codec
     compile 'commons-codec:commons-codec:1.4'
-    compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
-
     // Json Parser
     compile 'com.fasterxml.jackson.core:jackson-core:2.6.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.1'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.1'
+    // Testing
+    androidTestCompile 'junit:junit:4.12'
 }

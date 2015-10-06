@@ -1,88 +1,103 @@
 package com.fiision.lib.services;
 
 
-import org.apache.http.*;
-import org.apache.http.client.*;
-import org.apache.http.conn.scheme.*;
-import org.apache.http.conn.ssl.*;
-import org.apache.http.impl.client.*;
-import org.apache.http.impl.conn.tsccm.*;
-import org.apache.http.params.*;
-import org.apache.http.protocol.*;
+import com.fiision.lib.request.*;
 
-import java.security.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 
-public abstract class FwiService {
+public class FwiService {
 
-	
-	// Global static variables
-	static private boolean _isInitialized = false;
-	static private ThreadSafeClientConnManager _clientManager = null;
-	
-	
+
 	// Global variables
-	protected com.fiision.lib.request.FwiRequest _req = null;
-	protected HttpClient   _con = null;
-    protected HttpResponse _res = null;
-	
+	protected FwiRequest mRequest = null;
+    protected int mStatusCode = -1;
     
 	// Class's constructors
-	public FwiService(com.fiision.lib.request.FwiRequest request) {
-		if (!_isInitialized) {
-
-            try {
-                KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                trustStore.load(null, null);
-                MySSLSocketFactory sf = new MySSLSocketFactory(trustStore);
-                sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
-                PlainSocketFactory plainSocket = PlainSocketFactory.getSocketFactory();
-
-//                SSLSocketFactory sslSocket = SSLSocketFactory.getSocketFactory();
-//                sslSocket.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
-                SchemeRegistry schemeRegistry = new SchemeRegistry();
-                schemeRegistry.register(new Scheme("http" , plainSocket, 80));
-                schemeRegistry.register(new Scheme("https", sf  , 443));
-
-                HttpParams params = new BasicHttpParams();
-                HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-                HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-
-                _clientManager = new ThreadSafeClientConnManager(params, schemeRegistry);
-                _isInitialized = true;
-            } catch (Exception e) {
-//                return new DefaultHttpClient();
-            }
-
-		}
-        _req = request;
-		_con = new DefaultHttpClient(_clientManager, new BasicHttpParams());
+	public FwiService(FwiRequest request) {
+        mRequest = request;
 	}
 
 	
     // Class's properties
     public int status() {
-        return (_res != null ? _res.getStatusLine().getStatusCode() : -1);
+        return mStatusCode;
     }
 
 
-    // Class's public abstract methods
-    public abstract Object getResource();
-
-
 	// Class's protected methods
-	protected void execute() {
-		/* Condition validation */
-		if (this._req == null) return;
-        
-		try {
-            _req.prepare();
-			_res = _con.execute(_req);
-		}
-		catch (Exception ex) {
-			_req.abort();
-		}
+	public String execute() throws Exception {
+        mRequest.prepare();
+
+        HttpURLConnection connection = (HttpURLConnection) mRequest.getUrl().openConnection();
+        connection.setUseCaches(false);
+        connection.setDoOutput(true);
+
+        connection.setRequestMethod(mRequest.getMethod().method);
+        if (mRequest.getBody() != null && mRequest.getBody().length() > 0) connection.setFixedLengthStreamingMode(mRequest.getBody().length());
+
+        TreeMap<String, String> headers = mRequest.getHeaders();
+        for(Map.Entry<String, String> entry : headers.entrySet()) {
+            String header = entry.getKey();
+            String value  = entry.getValue();
+            connection.setRequestProperty(header, value);
+        }
+
+        // Send request
+        if (mRequest.getBody() != null && mRequest.getBody().length() > 0) {
+            OutputStream out = connection.getOutputStream();
+            out.write(mRequest.getBody().bytes());
+            out.flush();
+            out.close();
+        }
+
+        // Read response
+        mStatusCode = connection.getResponseCode();
+        InputStream inputStream = (mStatusCode == 200 ? connection.getInputStream() : connection.getErrorStream());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder content = new StringBuilder();
+        String newLine;
+        do {
+            newLine = reader.readLine();
+            if (newLine != null) {
+                content.append(newLine).append('\n');
+            }
+        } while (newLine != null);
+
+        if (content.length() > 0) {
+            // strip last newline
+            content.setLength(content.length() - 1);
+        }
+
+//        try {
+//
+//            responseBody = getString(inputStream);
+//        } finally {
+//            if (inputStream != null) {
+//                try {
+//                    inputStream.close();
+//                } catch (IOException e) {
+//                    // Ignore.
+//                }
+//            }
+//        }
+        connection.disconnect();
+        return content.toString();
+//        Log.i(LoggingService.LOG_TAG, "HTTP response. body: " + responseBody);
+
+
+
+//		/* Condition validation */
+//		if (this.mRequest == null) return;
+//
+//		try {
+//            mRequest.prepare();
+//			_res = _con.execute(mRequest);
+//		}
+//		catch (Exception ex) {
+//			mRequest.abort();
+//		}
 	}
 }

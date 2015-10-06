@@ -46,188 +46,191 @@ import com.fiision.lib.codec.*;
 import com.fiision.lib.foundation.*;
 import com.fiision.lib.request.params.*;
 
-import org.apache.http.*;
-import org.apache.http.client.methods.*;
-import org.apache.http.entity.*;
-
 import java.net.*;
 import java.util.*;
 
 
-public class FwiRequest extends HttpEntityEnclosingRequestBase {
+public class FwiRequest {
     
     
     // <editor-fold defaultstate="collapsed" desc="Class's static constructors">
     static public FwiRequest requestWithURL(FwiHttpMethod requestType, String url) {
-        return new FwiRequest(requestType, url);
+        try {
+            return new FwiRequest(requestType, url);
+        }
+        catch (Exception ex) {
+            return null;
+        }
     }
     // </editor-fold>
     
     
     // Global variables
-    private FwiHttpMethod _type = null;
-    
+    private URL mUrl = null;
+    private FwiHttpMethod mMethod = null;
+    private TreeMap<String, String> mHeaders = null;
+
     // Raw request
-    FwiDataParam _raw = null;
+    FwiDataParam mRaw = null;
     // Form request
-    ArrayList<FwiFormParam> _form = null;
-    ArrayList<FwiMultipartParam> _upload = null;
+    ArrayList<FwiFormParam> mForm = null;
+    ArrayList<FwiMultipartParam> mUpload = null;
     
     
     // Class's constructors
-    public FwiRequest(FwiHttpMethod type) {
-        super();
-        this._type = type;
-    }
-    public FwiRequest(FwiHttpMethod type, final String uri) {
-        this(type);
-        setURI(URI.create(uri));
+    public FwiRequest(FwiHttpMethod type, final String url) throws Exception {
+        mMethod  = type;
+        mUrl     = new URL(url);
+        mHeaders = new TreeMap<>();
     }
 
     
-    // Class's override methods
-    @Override
-    public String getMethod() {
-        return _type.method;
+    // Class's properties
+    public URL getUrl() {
+        return mUrl;
     }
-
-    
-    /** Build the request. */
-    public long prepare() {
-        this.setHeader("Accept-Encoding", "gzip, deflate");
-        this.setHeader("Connection", "close");
-        
-        /* Condition validation */
-        if (_raw == null && (_form == null || _form.size() == 0) && (_upload == null || _upload.size() == 0)) return 0;
-        long length = 0;
-        
-        if (_raw != null) {
-            // Define content type header
-            this.setHeader("Content-Type", _raw.getContentType());
-            
-            HttpEntity requestEntity = new ByteArrayEntity(_raw.getData().bytes());
-            this.setEntity(requestEntity);
-
-            length = requestEntity.getContentLength();
+    public FwiHttpMethod getMethod() {
+        return mMethod;
+    }
+    public TreeMap<String, String> getHeaders() {
+        return mHeaders;
+    }
+    public FwiData getBody() {
+        if (mRaw != null) {
+            return mRaw.getData();
         }
         else {
-            switch (_type) {
-                case kDelete: {
-                    // ???
-                    break;
+            return null;
+        }
+    }
+
+
+    /** Build the request. */
+    public long prepare() {
+        mHeaders.put("Accept-Encoding", "gzip, deflate");
+        mHeaders.put("Connection", "close");
+
+        /* Condition validation */
+        if (mRaw == null && (mForm == null || mForm.size() == 0) && (mUpload == null || mUpload.size() == 0)) return 0;
+        long length = 0;
+
+        switch (mMethod) {
+            case kDelete: {
+                // Do nothing
+                break;
+            }
+            case kGet: {
+                String finalURL = String.format("%s?%s", mUrl.toString(), TextUtils.join("&", mForm.toArray()));
+                try {
+                    URL url = new URL(finalURL);
+                    mUrl = url;
                 }
-                case kPatch:
-                case kPost:
-                case kPut: {
-                    if (_form != null && _upload == null) {
-                        // Define content type header
-                        this.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                catch (Exception ex) {
+                    // Ignore the exception, use original
+                }
+                break;
+            }
+            case kPatch:
+            case kPost:
+            case kPut: {
+                if (mForm != null && mUpload == null) {
+                    mRaw = new FwiDataParam(FwiCodec.convertStringToData(TextUtils.join("&", mForm.toArray())), "application/x-www-form-urlencoded");
+                }
+                else if (mForm != null || mUpload != null) {
+                    // Define boundary
+                    String boundary = String.format("----------%d", (new Date()).getTime());
+                    String contentType = String.format("multipart/form-data; boundary=%s", boundary);
 
-                        // Data
-                        FwiData data = FwiCodec.convertStringToData(TextUtils.join("&", _form.toArray()));
+                    // Define body
+                    String boundaryData = String.format("\r\n--%s\r\n", boundary);
+                    FwiMutableData body = new FwiMutableData();
 
-                        // Define content length header
-                        HttpEntity requestEntity = new ByteArrayEntity(data.bytes());
-                        this.setEntity(requestEntity);
+                    if (mUpload != null && mUpload.size() > 0) {
+                        for (int i = 0; i < mUpload.size(); i++) {
+                            FwiMultipartParam part = mUpload.get(i);
 
-                        length = requestEntity.getContentLength();
-                    }
-                    else {
-                        // Define boundary
-                        String boundary    = String.format("----------%d", (new Date()).getTime());
-                        String contentType = String.format("multipart/form-data; boundary=%s", boundary);
-
-                        // Define content type header
-                        this.addHeader("Content-Type", contentType);
-
-                        // Define body
-                        String boundaryData = String.format("\r\n--%s\r\n", boundary);
-                        FwiMutableData body  = new FwiMutableData();
-
-                        if (_upload != null && _upload.size() > 0) {
-                            for (int i = 0; i < _upload.size(); i++) {
-                                FwiMultipartParam part = _upload.get(i);
-
-                                body.append(FwiCodec.convertStringToData(boundaryData));
-                                body.append(FwiCodec.convertStringToData(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n", part.getName(), part.getFilename())));
-                                body.append(FwiCodec.convertStringToData(String.format("Content-Type: %s\r\n\r\n", part.getContentType())));
-                                body.append(part.getData());
-                            }
+                            body.append(FwiCodec.convertStringToData(boundaryData));
+                            body.append(FwiCodec.convertStringToData(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n", part.getName(), part.getFilename())));
+                            body.append(FwiCodec.convertStringToData(String.format("Content-Type: %s\r\n\r\n", part.getContentType())));
+                            body.append(part.getData());
                         }
-
-                        if (_form != null && _form.size() > 0) {
-                            for (int i = 0; i < _form.size(); i++) {
-                                FwiFormParam pair = _form.get(i);
-
-                                body.append(FwiCodec.convertStringToData(boundaryData));
-                                body.append(FwiCodec.convertStringToData(String.format("Content-Disposition: form-data; name=\"%s\"\r\n\r\n", pair.getKey())));
-                                body.append(FwiCodec.convertStringToData(pair.getValue()));
-                            }
-                        }
-                        body.append(FwiCodec.convertStringToData(String.format("\r\n--%s--\r\n", boundary)));
-
-                        // Define content length header
-                        HttpEntity requestEntity = new ByteArrayEntity(body.bytes());
-                        this.setEntity(requestEntity);
-
-                        length = requestEntity.getContentLength();
                     }
-                    break;
+
+                    if (mForm != null && mForm.size() > 0) {
+                        for (int i = 0; i < mForm.size(); i++) {
+                            FwiFormParam pair = mForm.get(i);
+
+                            body.append(FwiCodec.convertStringToData(boundaryData));
+                            body.append(FwiCodec.convertStringToData(String.format("Content-Disposition: form-data; name=\"%s\"\r\n\r\n", pair.getKey())));
+                            body.append(FwiCodec.convertStringToData(pair.getValue()));
+                        }
+                    }
+                    body.append(FwiCodec.convertStringToData(String.format("\r\n--%s--\r\n", boundary)));
+
+                    mRaw = new FwiDataParam(body, contentType);
                 }
-                case kGet:
-                default: {
-                    String finalURL = String.format("%s?%s", this.getURI(), TextUtils.join("&", _form.toArray()));
-                    setURI(URI.create(finalURL));
-                    break;
-                }
+                break;
+            }
+            default: {
+                break;
             }
         }
+
+        if (mRaw != null) {
+            // Define content type header
+            mHeaders.put("Content-Type", mRaw.getContentType());
+            length = mRaw.getData().length();
+        }
         return length;
+    }
+
+    public void setHeader(String header, String value) {
+        mHeaders.put(header, value);
     }
 
     
     // <editor-fold defaultstate="collapsed" desc="FwiForm">
     /** Add key-value. */
     public void addFormParams(FwiFormParam... params) {
-        if (_form == null) {
-            this._initializeForm();
-        }
-        _raw = null;
+        if (mForm == null) this._initializeForm();
+        mRaw = null;
 
         for (FwiFormParam param : params) {
-            _form.add(param);
+            mForm.add(param);
         }
     }
     /** Like add parameters but will reset the collection. */
     public void setFormParams(FwiFormParam... params) {
-        if (_form == null) {
+        if (mForm == null) {
             this._initializeForm();
-        } else {
-            _form.clear();
         }
-        _raw = null;
+        else {
+            mForm.clear();
+        }
+
+        mRaw = null;
         this.addFormParams(params);
     }
 
     /** Add multipart data. */
     public void addMultipartParams(FwiMultipartParam... params) {
-        if (_upload == null) {
-            this._initializeUpload();
-        }
-        _raw = null;
+        if (mUpload == null) this._initializeUpload();
+        mRaw = null;
 
         for (FwiMultipartParam param : params) {
-            _upload.add(param);
+            mUpload.add(param);
         }
     }
     /** Like add multipart data but will reset the collection. */
     public void setMultipartParams(FwiMultipartParam... params) {
-        if (_upload == null) {
+        if (mUpload == null) {
             this._initializeUpload();
-        } else {
-            _upload.clear();
         }
-        _raw = null;
+        else {
+            mUpload.clear();
+        }
+
+        mRaw = null;
         this.addMultipartParams(params);
     }
     // </editor-fold>
@@ -236,17 +239,14 @@ public class FwiRequest extends HttpEntityEnclosingRequestBase {
     // <editor-fold defaultstate="collapsed" desc="FwiRaw">
     public void setDataParam(FwiDataParam param) {
         /* Condition validation: Validate method type */
-    if (!(_type == FwiHttpMethod.kPost || _type == FwiHttpMethod.kPatch || _type == FwiHttpMethod.kPut)) return;
+        if (!(mMethod == FwiHttpMethod.kPost || mMethod == FwiHttpMethod.kPatch || mMethod == FwiHttpMethod.kPut)) return;
 
-    /* Condition validation: Validate parameter type */
-    if (param == null) return;
+        /* Condition validation: Validate parameter type */
+        if (param == null) return;
 
-    // Release form
-    _form = null;
-    _upload = null;
-
-    // Keep new raw
-    _raw = param;
+        mUpload = null;
+        mForm   = null;
+        mRaw    = param;
     }
     // </editor-fold>
 
@@ -254,12 +254,134 @@ public class FwiRequest extends HttpEntityEnclosingRequestBase {
     // Class's private methods
     public void _initializeForm() {
         /* Condition validation */
-        if (_form != null) return;
-        _form = new ArrayList<FwiFormParam>(9);
+        if (mForm != null) return;
+        mForm = new ArrayList<>(9);
     }
     public void _initializeUpload() {
         /* Condition validation */
-        if (_upload != null) return;
-        _upload = new ArrayList<FwiMultipartParam>(1);
+        if (mUpload != null) return;
+        mUpload = new ArrayList<>(1);
     }
 }
+
+
+//public class HttpRequest {
+//    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+//    public static final String HEADER_PROJECT_ID = "project_id";
+//    public static final String HEADER_AUTHORIZATION = "Authorization";
+//
+//    public static final String CONTENT_TYPE_FORM_ENCODED = "application/x-www-form-urlencoded";
+//    public static final String CONTENT_TYPE_JSON = "application/json";
+//
+//    private SimpleArrayMap<String, String> mHeaders = new SimpleArrayMap<>();
+//    private int responseCode;
+//    private String responseBody;
+//
+//    /**
+//     * Add a request header
+//     * @param name the header's name
+//     * @param value the header's value
+//     */
+//    public void setHeader(String name, String value) {
+//        this.mHeaders.put(name, value);
+//    }
+//
+//    /**
+//     * @return this request's response code
+//     */
+//    public int getResponseCode() {
+//        return responseCode;
+//    }
+//
+//    /**
+//     *
+//     * @return this request's response body
+//     */
+//    public String getResponseBody() {
+//        return responseBody;
+//    }
+//
+//    /**
+//     * Post the request
+//     * @param url where to post to
+//     * @param requestBody the body of the request
+//     * @throws IOException
+//     */
+//    public void doPost(String url, String requestBody) throws IOException {
+//        Log.i(LoggingService.LOG_TAG, "HTTP request. body: " + requestBody);
+//
+//        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+//        conn.setDoOutput(true);
+//        conn.setUseCaches(false);
+//        conn.setFixedLengthStreamingMode(requestBody.getBytes().length);
+//        conn.setRequestMethod("POST");
+//        for (int i = 0; i < mHeaders.size(); i++) {
+//            conn.setRequestProperty(mHeaders.keyAt(i), mHeaders.valueAt(i));
+//        }
+//        OutputStream out = null;
+//        try {
+//            out = conn.getOutputStream();
+//            out.write(requestBody.getBytes());
+//        } finally {
+//            if (out != null) {
+//                try {
+//                    out.close();
+//                } catch (IOException e) {
+//                    // Ignore.
+//                }
+//            }
+//        }
+//
+//        responseCode = conn.getResponseCode();
+//
+//        InputStream inputStream = null;
+//        try {
+//            if (responseCode == 200) {
+//                inputStream = conn.getInputStream();
+//            } else {
+//                inputStream = conn.getErrorStream();
+//            }
+//            responseBody = getString(inputStream);
+//        } finally {
+//            if (inputStream != null) {
+//                try {
+//                    inputStream.close();
+//                } catch (IOException e) {
+//                    // Ignore.
+//                }
+//            }
+//        }
+//
+//        Log.i(LoggingService.LOG_TAG, "HTTP response. body: " + responseBody);
+//
+//        conn.disconnect();
+//    }
+//
+//    /**
+//     * Convenience method to convert an InputStream to a String.
+//     * <p/>
+//     * If the stream ends in a newline character, it will be stripped.
+//     * <p/>
+//     * If the stream is {@literal null}, returns an empty string.
+//     */
+//    private String getString(InputStream stream) throws IOException {
+//        if (stream == null) {
+//            return "";
+//        }
+//        BufferedReader reader =
+//                new BufferedReader(new InputStreamReader(stream));
+//        StringBuilder content = new StringBuilder();
+//        String newLine;
+//        do {
+//            newLine = reader.readLine();
+//            if (newLine != null) {
+//                content.append(newLine).append('\n');
+//            }
+//        } while (newLine != null);
+//        if (content.length() > 0) {
+//            // strip last newline
+//            content.setLength(content.length() - 1);
+//        }
+//        return content.toString();
+//    }
+//}

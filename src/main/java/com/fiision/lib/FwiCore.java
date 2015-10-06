@@ -83,6 +83,7 @@ public final class FwiCore {
         @Override
         public String toString() { return String.format("RSA -> Key-size: %i bits, Block-size: %i bytes, Content-size: %i", length, block, (block - 12)); }
     }
+
     /** Signature supported. */
     public enum FwiSignature {
         kSignature1  ((byte)20, "1.2.840.113549.1.1.5" , "SHA1withRSA"  ),
@@ -126,24 +127,6 @@ public final class FwiCore {
         public String toString() { return String.format("%s (%s)", algorithm, oid); }
     }
 
-    /** Json supported. */
-    public enum FwiJsonValue {
-        kNull	 ((byte)0x00, "Null"   ), // Primitive
-        kBoolean ((byte)0x01, "Boolean"), // Primitive
-        kDouble	 ((byte)0x02, "Double" ), // Primitive
-        kInteger ((byte)0x03, "Integer"), // Primitive
-        kString	 ((byte)0x04, "String" ), // Primitive
-        kArray	 ((byte)0x05, "Array"  ), // Constructed
-        kObject	 ((byte)0x06, "Object" ); // Constructed
-
-        public byte value = 0x00;
-        public String description = null;
-        FwiJsonValue(byte value, String description) { this.value = value; this.description = description; }
-
-        @Override
-        public String toString() { return description; }
-    }
-
     /** HTTP request method supported. */
     public enum FwiHttpMethod {
         kCopy   ("COPY"),
@@ -164,5 +147,63 @@ public final class FwiCore {
 
         @Override
         public String toString() { return String.format("HTTP %s", this.method); }
+    }
+
+    public enum FwiHttpStatus {
+        kContinue("CONTINUE", 100),
+        kSwitchingProtocols("SWITCHING PROTOCOLS", 101),
+        kProcessing("PROCESSING", 102),
+        kOk("OK", 200),
+        kCreated("CREATED", 201),
+        kAccepted("ACCEPTED", 202),
+        kNonAuthoritativeInformation("NON AUTHORITATIVE INFORMATION", 203),
+        kNoContent("NO CONTENT", 204),
+        kResetContent("RESET CONTENT", 205),
+        kPartialContent("PARTIAL CONTENT", 206),
+        kMultiStatus("MULTI STATUS", 207),
+        kMultipleChoices("MULTIPLE CHOICES", 300),
+        kMovedPermanently("MOVED PERMANENTLY", 301),
+        kMovedTemporary("MOVED TEMPORARILY", 302),
+        kSeeOther("SEE OTHER", 303),
+        kNotModified("NOT MODIFIED", 304),
+        kUseProxy("USE PROXY", 305),
+        kTemporaryRedirect("TEMPORARY REDIRECT", 307),
+        kBadRequest("BAD REQUEST", 400),
+        kUnauthorized("UNAUTHORIZED", 401),
+        kPaymentRequired("PAYMENT REQUIRED", 402),
+        kForbidden("FORBIDDEN", 403),
+        kNotFound("NOT FOUND", 404),
+        kMethodNotAllowed("METHOD NOT ALLOWED", 405),
+        kNotAcceptable("NOT ACCEPTABLE", 406),
+        kProxyAuthenticationRequired("PROXY AUTHENTICATION REQUIRED", 407),
+        kRequestTimeout("REQUEST TIMEOUT", 408),
+        kConflict("CONFLICT", 409),
+        kGone("GONE", 410),
+        kLengthRequired("LENGTH REQUIRED", 411),
+        kPrecondition("PRECONDITION FAILED", 412),
+        kRequestTooLong("REQUEST TOO LONG", 413),
+        kRequestUriTooLong("REQUEST URI TOO LONG", 414),
+        kUnsupportedMediaType("UNSUPPORTED MEDIA TYPE", 415),
+        kRequestedRangeNotSatisfiable("REQUESTED RANGE NOT SATISFIABLE", 416),
+        kExpectationFailed("EXPECTATION FAILED", 417),
+        kInsufficientSpaceOnResource("INSUFFICIENT SPACE ON RESOURCE", 419),
+        kMethodFailure("METHOD FAILURE", 420),
+        kUnprocessableEntity("UNPROCESSABLE ENTITY", 422),
+        kLocked("LOCKED", 423),
+        kFailedDependency("FAILED DEPENDENCY", 424),
+        kInternalServerError("INTERNAL SERVER ERROR", 500),
+        kNotImplemented("NOT IMPLEMENTED", 501),
+        kBadGateway("BAD GATEWAY", 502),
+        kServiceUnavailable("SERVICE UNAVAILABLE", 503),
+        kGatewayTimeout("GATEWAY TIMEOUT", 504),
+        kHttpVersionNotSupported("HTTP VERSION NOT SUPPORTED", 505),
+        kInsufficientStorage("INSUFFICIENT STORAGE", 507);
+
+        public int status = -1;
+        public String description = null;
+        FwiHttpStatus(String description, int status) { this.description = description; this.status = status; }
+
+        @Override
+        public String toString() { return String.format("(%d) %s", status, description); }
     }
 }

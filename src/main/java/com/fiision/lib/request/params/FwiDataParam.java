@@ -49,15 +49,6 @@ public class FwiDataParam implements Serializable {
 
     
     // <editor-fold defaultstate="collapsed" desc="Class's static constructors">
-    static public FwiDataParam paramWithJson(FwiJson json) {
-        /* Condition validation */
-        if (json == null) {
-            return null;
-        }
-        else {
-            return FwiDataParam.paramWithData(json.encode(), "application/json; charset=UTF-8");
-        }
-    }
     static public FwiDataParam paramWithString(String string) {
         /* Condition validation */
         if (string == null || string.length() == 0) {
