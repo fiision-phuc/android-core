@@ -1,6 +1,7 @@
 package com.fiision.lib.services;
 
 
+import com.fiision.lib.*;
 import com.fiision.lib.request.*;
 
 import java.io.*;
@@ -32,10 +33,10 @@ public class FwiService {
         mRequest.prepare();
 
         HttpURLConnection connection = (HttpURLConnection) mRequest.getUrl().openConnection();
-        connection.setUseCaches(false);
-        connection.setDoOutput(true);
+//        connection.setUseCaches(false);
+//        connection.setDoOutput(true);
 
-        connection.setRequestMethod(mRequest.getMethod().method);
+        if (mRequest.getMethod() != FwiCore.FwiHttpMethod.kGet) connection.setRequestMethod(mRequest.getMethod().method);
         if (mRequest.getBody() != null && mRequest.getBody().length() > 0) connection.setFixedLengthStreamingMode(mRequest.getBody().length());
 
         TreeMap<String, String> headers = mRequest.getHeaders();
@@ -66,10 +67,8 @@ public class FwiService {
             }
         } while (newLine != null);
 
-        if (content.length() > 0) {
-            // strip last newline
-            content.setLength(content.length() - 1);
-        }
+        reader.close();
+        if (content.length() > 0) content.setLength(content.length() - 1);
 
 //        try {
 //
