@@ -1,4 +1,4 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
@@ -17,11 +17,11 @@ android {
         preDexLibraries false
     }
 
-    testOptions {
-        unitTests.all {
-            jvmArgs '-XX:MaxPermSize=256m'
-        }
-    }
+//    testOptions {
+//        unitTests.all {
+//            jvmArgs '-XX:MaxPermSize=256m'
+//        }
+//    }
 }
 
 dependencies {
@@ -33,5 +33,5 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.1'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.1'
     // Testing
-    androidTestCompile 'junit:junit:4.12'
+//    androidTestCompile 'junit:junit:4.12'
 }

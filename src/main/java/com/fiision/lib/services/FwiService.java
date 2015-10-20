@@ -15,7 +15,8 @@ public class FwiService {
 	// Global variables
 	protected FwiRequest mRequest = null;
     protected int mStatusCode = -1;
-    
+
+
 	// Class's constructors
 	public FwiService(FwiRequest request) {
         mRequest = request;
