@@ -64,40 +64,12 @@ public class FwiService {
         do {
             newLine = reader.readLine();
             if (newLine != null) {
-                content.append(newLine).append('\n');
+                content.append(newLine);
             }
         } while (newLine != null);
 
         reader.close();
-        if (content.length() > 0) content.setLength(content.length() - 1);
-
-//        try {
-//
-//            responseBody = getString(inputStream);
-//        } finally {
-//            if (inputStream != null) {
-//                try {
-//                    inputStream.close();
-//                } catch (IOException e) {
-//                    // Ignore.
-//                }
-//            }
-//        }
         connection.disconnect();
         return content.toString();
-//        Log.i(LoggingService.LOG_TAG, "HTTP response. body: " + responseBody);
-
-
-
-//		/* Condition validation */
-//		if (this.mRequest == null) return;
-//
-//		try {
-//            mRequest.prepare();
-//			_res = _con.execute(mRequest);
-//		}
-//		catch (Exception ex) {
-//			mRequest.abort();
-//		}
 	}
 }
