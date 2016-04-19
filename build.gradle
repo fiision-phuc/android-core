@@ -22,9 +22,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // Third Parties Libs
     compile 'commons-codec:commons-codec:1.4'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.6.1'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.6.1'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.1'
     // Testing
     testCompile 'junit:junit:4.12'
 }
