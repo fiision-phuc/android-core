@@ -13,13 +13,11 @@ android {
         targetSdkVersion rootProject.ext.targetSDKVersion
     }
     dexOptions {
-        incremental true
         preDexLibraries false
     }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
     // Third Parties Libs
     compile 'commons-codec:commons-codec:1.4'
     // Testing
