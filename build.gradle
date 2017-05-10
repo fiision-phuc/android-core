@@ -22,4 +22,5 @@ dependencies {
     compile 'commons-codec:commons-codec:1.4'
     // Testing
     testCompile 'junit:junit:4.12'
+    androidTestCompile 'org.testng:testng:6.9.6'
 }
